@@ -12,17 +12,15 @@ import collections
 import numbers
 import math
 import pandas as pd
-class IEEE99Loader(object):
+class KDD99Loader(object):
     def __init__(self, data_path, mode="train"):
-        #print("data_path = " + data_path)
+        #print("fault data_loader")
         self.mode=mode
         data = np.load(data_path)
 
-        labels = data["ieee"][:,-1]
-        features = data["ieee"][:,:-1]
+        labels = data["kdd"][:,-1]
+        features = data["kdd"][:,:-1]
         N, D = features.shape
-        print(N)
-        print(D)
         
         normal_data = features[labels==1]
         normal_labels = labels[labels==1]
@@ -68,7 +66,7 @@ class IEEE99Loader(object):
 def get_loader(data_path, batch_size, mode='train'):
     """Build and return data loader."""
 
-    dataset = IEEE99Loader(data_path, mode)
+    dataset = KDD99Loader(data_path, mode)
 
     shuffle = False
     if mode == 'train':

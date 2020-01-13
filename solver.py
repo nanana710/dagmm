@@ -10,7 +10,7 @@ from torch.autograd import Variable
 from model import *
 import matplotlib.pyplot as plt
 from utils import *
-from data_loader_ieee import * as data_loader
+from data_loader import *
 import IPython
 from tqdm import tqdm
 
