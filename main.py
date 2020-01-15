@@ -19,6 +19,7 @@ def main(config):
     data_loader = get_loader(config.data_path, batch_size=config.batch_size, mode=config.mode)
     
     # Solver
+    print(data_loader)
     solver = Solver(data_loader, vars(config))
 
     if config.mode == 'train':

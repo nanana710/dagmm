@@ -26,13 +26,31 @@ class DaGMM(nn.Module):
         super(DaGMM, self).__init__()
 
         layers = []
-        layers += [nn.Linear(118,60)]
+        layers += [nn.Linear(2833,1420)]
         layers += [nn.Tanh()]
-        layers += [nn.Linear(60,30)]
+        layers += [nn.Linear(1420,710)]
         layers += [nn.Tanh()]
-        layers += [nn.Linear(30,10)]
+        layers += [nn.Linear(710,350)]
+        layers += [nn.Tanh()]
+        layers += [nn.Linear(350,170)]
+        layers += [nn.Tanh()]
+        layers += [nn.Linear(170,80)]
+        layers += [nn.Tanh()]
+        layers += [nn.Linear(80,40)]
+        layers += [nn.Tanh()]
+        layers += [nn.Linear(40,20)]
+        layers += [nn.Tanh()]
+        layers += [nn.Linear(20,10)]
         layers += [nn.Tanh()]
         layers += [nn.Linear(10,1)]
+
+        #layers += [nn.Linear(118,60)]
+        #layers += [nn.Tanh()]
+        #layers += [nn.Linear(60,30)]
+        #layers += [nn.Tanh()]
+        #layers += [nn.Linear(30,10)]
+        #layers += [nn.Tanh()]
+        #layers += [nn.Linear(10,1)]
 
         self.encoder = nn.Sequential(*layers)
 
@@ -40,11 +58,29 @@ class DaGMM(nn.Module):
         layers = []
         layers += [nn.Linear(1,10)]
         layers += [nn.Tanh()]
-        layers += [nn.Linear(10,30)]
+        layers += [nn.Linear(10,20)]
         layers += [nn.Tanh()]
-        layers += [nn.Linear(30,60)]
+        layers += [nn.Linear(20,40)]
         layers += [nn.Tanh()]
-        layers += [nn.Linear(60,118)]
+        layers += [nn.Linear(40,80)]
+        layers += [nn.Tanh()]
+        layers += [nn.Linear(80,170)]
+        layers += [nn.Tanh()]
+        layers += [nn.Linear(170,350)]
+        layers += [nn.Tanh()]
+        layers += [nn.Linear(350,710)]
+        layers += [nn.Tanh()]
+        layers += [nn.Linear(710,1420)]
+        layers += [nn.Tanh()]
+        layers += [nn.Linear(1420,2833)]
+        
+        #layers += [nn.Linear(1,10)]
+        #layers += [nn.Tanh()]
+        #layers += [nn.Linear(10,30)]
+        #layers += [nn.Tanh()]
+        #layers += [nn.Linear(30,60)]
+        #layers += [nn.Tanh()]
+        #layers += [nn.Linear(60,118)]
 
         self.decoder = nn.Sequential(*layers)
 
@@ -71,6 +107,10 @@ class DaGMM(nn.Module):
 
         dec = self.decoder(enc)
 
+        #print(enc.size())
+        #print(dec.size())
+        #print(x.size())
+        ## here is for removing nan ##
         rec_cosine = F.cosine_similarity(x, dec, dim=1)
         rec_euclidean = self.relative_euclidean_distance(x, dec)
 
@@ -131,8 +171,8 @@ class DaGMM(nn.Module):
             cov_k = cov[i] + to_var(torch.eye(D)*eps)
             cov_inverse.append(torch.inverse(cov_k).unsqueeze(0))
 
-            #det_cov.append(np.linalg.det(cov_k.data.cpu().numpy()* (2*np.pi)))
-            det_cov.append((Cholesky.apply(cov_k.cpu() * (2*np.pi)).diag().prod()).unsqueeze(0))
+            det_cov.append(np.linalg.det(cov_k.data.cpu().numpy()* (2*np.pi)))
+            #det_cov.append((Cholesky.apply(cov_k.cpu() * (2*np.pi)).diag().prod()).unsqueeze(0))
             cov_diag = cov_diag + torch.sum(1 / cov_k.diag())
 
         # K x D x D
