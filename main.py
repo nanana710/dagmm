@@ -19,7 +19,7 @@ def main(config):
     data_loader = get_loader(config.data_path, batch_size=config.batch_size, mode=config.mode)
     
     # Solver
-    print(data_loader)
+    print("data_path of main : " + config.data_path)
     solver = Solver(data_loader, vars(config))
 
     if config.mode == 'train':
