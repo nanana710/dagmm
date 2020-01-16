@@ -67,8 +67,8 @@ class Solver(object):
         self.dagmm.zero_grad()
 
     def to_var(self, x, volatile=False):
-        print("cuda_available")
-        print(torch.cuda.is_available())
+        #print("cuda_available")
+        #print(torch.cuda.is_available())
         if torch.cuda.is_available():
             x = x.cuda()
         return Variable(x, volatile=volatile)
@@ -91,12 +91,16 @@ class Solver(object):
         self.ap_global_train = np.array([0,0,0])
         for e in range(start, self.num_epochs):
             for i, (input_data, labels) in enumerate(tqdm(self.data_loader)):
+
                 iter_ctr += 1
                 start = time.time()
 
                 input_data = self.to_var(input_data)
+                #print("input_data")
+                #print(input_data)
 
                 total_loss,sample_energy, recon_error, cov_diag = self.dagmm_step(input_data)
+                
                 # Logging
                 loss = {}
                 loss['total_loss'] = total_loss.data.item()
@@ -161,7 +165,15 @@ class Solver(object):
 
     def dagmm_step(self, input_data):
         self.dagmm.train()
+        print("input_data")
+        print(input_data)
+        print(input_data.size())
         enc, dec, z, gamma = self.dagmm(input_data)
+        #print("enc, dec, z and gamma")
+        #print(enc)
+        #print(dec)
+        #print(z)
+        #print(gamma)
 
         total_loss, sample_energy, recon_error, cov_diag = self.dagmm.loss_function(input_data, dec, z, gamma, self.lambda_energy, self.lambda_cov_diag)
 
@@ -185,14 +197,14 @@ class Solver(object):
 
         for it, (input_data, labels) in enumerate(self.data_loader):
             input_data = self.to_var(input_data)
-            print("input_data")
-            print(input_data)
+            #print("input_data")
+            #print(input_data)
             enc, dec, z, gamma = self.dagmm(input_data)
-            print("enc, dec, z and gamma")
-            print(enc)
-            print(dec)
-            print(z)
-            print(gamma)
+            #print("enc, dec, z and gamma")
+            #print(enc)
+            #print(dec)
+            #print(z)
+            #print(gamma)
             phi, mu, cov = self.dagmm.compute_gmm_params(z, gamma)
             
             batch_gamma_sum = torch.sum(gamma, dim=0)

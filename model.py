@@ -51,8 +51,12 @@ class DaGMM(nn.Module):
         #layers += [nn.Linear(30,10)]
         #layers += [nn.Tanh()]
         #layers += [nn.Linear(10,1)]
-
+        
+        #print("after encoding")
+        #print(nn.Sequential(*layers))
+        #print(layers.size())
         self.encoder = nn.Sequential(*layers)
+        
 
 
         layers = []
@@ -83,6 +87,7 @@ class DaGMM(nn.Module):
         #layers += [nn.Linear(60,118)]
 
         self.decoder = nn.Sequential(*layers)
+        
 
         layers = []
         layers += [nn.Linear(latent_dim,10)]
@@ -102,17 +107,28 @@ class DaGMM(nn.Module):
         return (a-b).norm(2, dim=1) / a.norm(2, dim=1)
 
     def forward(self, x):
+        #print("x")
+        #print(x)
 
         enc = self.encoder(x)
-
+        print("enc")
+        print(enc)
+        print(enc.size())
+        
         dec = self.decoder(enc)
+        #print("dec")
+        #print(dec)
 
         #print(enc.size())
         #print(dec.size())
         #print(x.size())
         ## here is for removing nan ##
         rec_cosine = F.cosine_similarity(x, dec, dim=1)
+        #print("rec_cosine")
+        #print(rec_cosine)
         rec_euclidean = self.relative_euclidean_distance(x, dec)
+        #print("rec_euclidean")
+        #print(rec_euclidean)
 
         z = torch.cat([enc, rec_euclidean.unsqueeze(-1), rec_cosine.unsqueeze(-1)], dim=1)
 
