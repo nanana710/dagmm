@@ -53,8 +53,7 @@ class DaGMM(nn.Module):
         #layers += [nn.Linear(10,1)]
         
         #print("after encoding")
-        #print(nn.Sequential(*layers))
-        #print(layers.size())
+        #print(layers)
         self.encoder = nn.Sequential(*layers)
         
 
@@ -107,8 +106,8 @@ class DaGMM(nn.Module):
         return (a-b).norm(2, dim=1) / a.norm(2, dim=1)
 
     def forward(self, x):
-        #print("x")
-        #print(x)
+        print("x")
+        print(x)
 
         enc = self.encoder(x)
         print("enc")
@@ -122,7 +121,9 @@ class DaGMM(nn.Module):
         #print(enc.size())
         #print(dec.size())
         #print(x.size())
+        
         ## here is for removing nan ##
+        
         rec_cosine = F.cosine_similarity(x, dec, dim=1)
         #print("rec_cosine")
         #print(rec_cosine)
@@ -173,10 +174,20 @@ class DaGMM(nn.Module):
             mu = to_var(self.mu)
         if cov is None:
             cov = to_var(self.cov)
+        #print("phi, mu, cov")
+        #print(phi)
+        #print(mu)
+        #print(cov)
 
         k, D, _ = cov.size()
+        #print("k, D, _")
+        #print(k)
+        #print(D)
+        #print(_)
 
         z_mu = (z.unsqueeze(1)- mu.unsqueeze(0))
+        #print("z_mu")
+        #print(z_mu)
 
         cov_inverse = []
         det_cov = []
@@ -203,10 +214,19 @@ class DaGMM(nn.Module):
         max_val = torch.max((exp_term_tmp).clamp(min=0), dim=1, keepdim=True)[0]
 
         exp_term = torch.exp(exp_term_tmp - max_val)
+        
+        #print("max_val, exp_term, det_cov, eps")
+        #print(max_val)
+        #print(exp_term)
+        #print(det_cov)
+        #print(eps)
 
-        # sample_energy = -max_val.squeeze() - torch.log(torch.sum(phi.unsqueeze(0) * exp_term / (det_cov).unsqueeze(0), dim = 1) + eps)
-        sample_energy = -max_val.squeeze() - torch.log(torch.sum(phi.unsqueeze(0) * exp_term / (torch.sqrt(det_cov)).unsqueeze(0), dim = 1) + eps)
-        # sample_energy = -max_val.squeeze() - torch.log(torch.sum(phi.unsqueeze(0) * exp_term / (torch.sqrt((2*np.pi)**D * det_cov)).unsqueeze(0), dim = 1) + eps)
+        sample_energy = -max_val.squeeze() - torch.log(torch.sum(phi.unsqueeze(0) * exp_term / (det_cov).unsqueeze(0), dim = 1) + eps)
+        #sample_energy = -max_val.squeeze() - torch.log(torch.sum(phi.unsqueeze(0) * exp_term / (torch.sqrt(det_cov)).unsqueeze(0), dim = 1) + eps)
+        #sample_energy = -max_val.squeeze() - torch.log(torch.sum(phi.unsqueeze(0) * exp_term / (torch.sqrt((2*np.pi)**D * det_cov)).unsqueeze(0), dim = 1) + eps)
+        
+        print("sample_energy")
+        print(sample_energy)
 
 
         if size_average:
@@ -216,13 +236,31 @@ class DaGMM(nn.Module):
 
 
     def loss_function(self, x, x_hat, z, gamma, lambda_energy, lambda_cov_diag):
+        #print("x, dec, z, gamma, lambda_energy, lambd_cov_diag")
+        #print(x)
+        #print(x_hat)
+        #print(z)
+        #print(gamma)
+        #print(lambda_energy)
+        #print(lambda_cov_diag)
 
         recon_error = torch.mean((x - x_hat) ** 2)
+        #print("recon_error")
+        #print(recon_error)
 
         phi, mu, cov = self.compute_gmm_params(z, gamma)
+        #print("phi, mu, cov")
+        #print(phi)
+        #print(mu)
+        #print(cov)
 
         sample_energy, cov_diag = self.compute_energy(z, phi, mu, cov)
+        #print("sample_energy, cov_diag")
+        #print(sample_energy)
+        #print(cov_diag)
 
         loss = recon_error + lambda_energy * sample_energy + lambda_cov_diag * cov_diag
+        #print("loss")
+        #print(loss)
 
         return loss, sample_energy, recon_error, cov_diag

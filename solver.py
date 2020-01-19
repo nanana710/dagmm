@@ -74,6 +74,7 @@ class Solver(object):
         return Variable(x, volatile=volatile)
 
     def train(self):
+        print("\ntrain\n")
         iters_per_epoch = len(self.data_loader)
 
         # Start with trained model if exists
@@ -91,6 +92,8 @@ class Solver(object):
         self.ap_global_train = np.array([0,0,0])
         for e in range(start, self.num_epochs):
             for i, (input_data, labels) in enumerate(tqdm(self.data_loader)):
+                #print("for loop")
+                #print(i)
 
                 iter_ctr += 1
                 start = time.time()
@@ -100,8 +103,15 @@ class Solver(object):
                 #print(input_data)
 
                 total_loss,sample_energy, recon_error, cov_diag = self.dagmm_step(input_data)
+                #print("total_loss, sample_energy, recon_error, cov_diag")
+                #print(total_loss)
+                #print(sample_energy)
+                #print(recon_error)
+                #print(cov_diag)
                 
                 # Logging
+                print("Logging")
+                
                 loss = {}
                 loss['total_loss'] = total_loss.data.item()
                 loss['sample_energy'] = sample_energy.item()
@@ -111,7 +121,11 @@ class Solver(object):
 
 
                 # Print out log info
+                #print("Print out")
+                #print(i)
+                #print((i+1) % self.log_step)
                 if (i+1) % self.log_step == 0:
+                    print("Print out: True")
                     elapsed = time.time() - start_time
                     total_time = ((self.num_epochs*iters_per_epoch)-(e*iters_per_epoch+i)) * elapsed/(e*iters_per_epoch+i+1)
                     epoch_time = (iters_per_epoch-i)* elapsed/(e*iters_per_epoch+i+1)
@@ -159,15 +173,19 @@ class Solver(object):
 
                     print("phi", self.dagmm.phi,"mu",self.dagmm.mu, "cov",self.dagmm.cov)
                 # Save model checkpoints
+                #print("Save model chaeckpoint")
+                #print(i)
+                #print((i+1) % self.model_save_step)
                 if (i+1) % self.model_save_step == 0:
                     torch.save(self.dagmm.state_dict(),
                         os.path.join(self.model_save_path, '{}_{}_dagmm.pth'.format(e+1, i+1)))
 
     def dagmm_step(self, input_data):
+        print("\ndagmmstep\n")
         self.dagmm.train()
-        print("input_data")
-        print(input_data)
-        print(input_data.size())
+        #print("input_data")
+        #print(input_data)
+        #print(input_data.size())
         enc, dec, z, gamma = self.dagmm(input_data)
         #print("enc, dec, z and gamma")
         #print(enc)
@@ -176,6 +194,11 @@ class Solver(object):
         #print(gamma)
 
         total_loss, sample_energy, recon_error, cov_diag = self.dagmm.loss_function(input_data, dec, z, gamma, self.lambda_energy, self.lambda_cov_diag)
+        print("total_loss, sample_energy, recon_error, cov_diag")
+        print(total_loss)
+        print(sample_energy)
+        print(recon_error)
+        print(cov_diag)
 
         self.reset_grad()
         total_loss.backward()
